@@ -1,14 +1,15 @@
 import os
 from dotenv import load_dotenv
 import streamlit as st
-from mistralai import Mistral
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Mistral client
 api_key = os.getenv("MISTRAL_API_KEY")
-client = Mistral(api_key=api_key)
+client = MistralClient(api_key=api_key)
 
 # Page configuration
 st.set_page_config(
@@ -120,11 +121,13 @@ You provide helpful information about:
 
 Be friendly, informative, and provide practical advice for travelers."""
     
-    messages = [{"role": "system", "content": system_prompt}] + st.session_state.messages
+    messages = [ChatMessage(role="system", content=system_prompt)]
+    for msg in st.session_state.messages:
+        messages.append(ChatMessage(role=msg["role"], content=msg["content"]))
     
     try:
         # Get response from Mistral
-        response = client.chat.complete(
+        response = client.chat(
             model="mistral-small",
             messages=messages,
             temperature=0.7,
