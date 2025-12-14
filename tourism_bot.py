@@ -1,14 +1,13 @@
 import os
 from dotenv import load_dotenv
-from mistralai.client import MistralClient
-from mistralai.models.chat_message import ChatMessage
+from mistralai import Mistral
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Mistral client
 api_key = os.getenv("MISTRAL_API_KEY")
-client = MistralClient(api_key=api_key)
+client = Mistral(api_key=api_key)
 
 class TourismBot:
     def __init__(self):
@@ -31,13 +30,13 @@ Be friendly, informative, and provide practical advice for travelers."""
         """Send a message to the bot and get a response."""
         
         # Add user message to history
-        self.conversation_history.append(ChatMessage(role="user", content=user_message))
+        self.conversation_history.append({"role": "user", "content": user_message})
         
         # Prepare messages for API call
-        messages = [ChatMessage(role="system", content=self.system_prompt)] + self.conversation_history
+        messages = [{"role": "system", "content": self.system_prompt}] + self.conversation_history
         
         # Get response from Mistral
-        response = client.chat(
+        response = client.chat.complete(
             model=self.model,
             messages=messages,
             temperature=0.7,
@@ -48,7 +47,7 @@ Be friendly, informative, and provide practical advice for travelers."""
         assistant_message = response.choices[0].message.content
         
         # Add assistant response to history
-        self.conversation_history.append(ChatMessage(role="assistant", content=assistant_message))
+        self.conversation_history.append({"role": "assistant", "content": assistant_message})
         
         return assistant_message
 
